@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-
+// import { FlyControls } from 'three/addons/controls/FlyControls.js';
 //SCENE & CAMERA
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(
@@ -28,6 +28,8 @@ ambientLight.position.set(0, 4, 5);
 scene.add(ambientLight);
 
 //CAMERA CONTROLS
+
+// const flyControls = new FlyControls(camera, renderer.domElement);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.zoomSpeed = 7;
 controls.dynamicDampingFactor = 0.1;
@@ -37,7 +39,8 @@ controls.update();
 const floorGeo = new THREE.BoxGeometry(20, 0.1, 20);
 const floorMat = new THREE.MeshStandardMaterial();
 const floor = new THREE.Mesh(floorGeo, floorMat);
-floor.userData.floor = true;
+floor.userData.ground = true;
+floor.name = 'ground';
 scene.add(floor);
 
 //BOX GEO
@@ -46,7 +49,6 @@ const loader = new GLTFLoader();
 loader.load(
   'assets/cube-with-slider.glb',
   function (gltf) {
-    console.log(gltf.scene.children[1]);
     const cube = gltf.scene.children[0];
     cube.userData.draggable = true;
 
@@ -95,16 +97,22 @@ window.addEventListener('mousemove', (event) => {
 
 function dragObject() {
   if (draggable != null) {
-    raycaster.setFromCamera(mouseMove, camera);
-    const intersected = raycaster.intersectObjects(scene.children);
-    if (intersected.length > 0) {
-      for (let o of intersected) {
-        if (!o.object.userData.floor) continue;
-
-        draggable.position.x = -o.point.z;
-        draggable.position.z = o.point.x;
+    window.addEventListener('keydown', (e) => {
+      if (e.keycode === 87) {
+        console.log('forward');
       }
-    }
+    });
+
+    // raycaster.setFromCamera(mouseMove, camera);
+    // const intersected = raycaster.intersectObjects(scene.children);
+    // if (intersected.length > 0) {
+    //   for (let o of intersected) {
+    //     // o.object.material.color.setHex(0xff0000);
+
+    //     if (o.object.name === 'ground') continue;
+    //     draggable.position.x = -o.point.z;
+    //     draggable.position.z = o.point.x;
+    //   }
   }
 }
 
