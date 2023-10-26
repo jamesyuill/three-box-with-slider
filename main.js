@@ -10,7 +10,7 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   1000
 );
-camera.position.set(0, 8, 18);
+camera.position.set(0, 3, 10);
 
 //RENDERER
 const renderer = new THREE.WebGLRenderer({
@@ -29,11 +29,10 @@ scene.add(ambientLight);
 
 //CAMERA CONTROLS
 
-// const flyControls = new FlyControls(camera, renderer.domElement);
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.zoomSpeed = 7;
-controls.dynamicDampingFactor = 0.1;
-controls.update();
+// const controls = new OrbitControls(camera, renderer.domElement);
+// controls.zoomSpeed = 7;
+// controls.dynamicDampingFactor = 0.1;
+// controls.update();
 
 //FLOOR GEO
 const floorGeo = new THREE.BoxGeometry(20, 0.1, 20);
@@ -53,6 +52,9 @@ loader.load(
   'assets/cube-with-slider.glb',
   function (gltf) {
     gltf.scene.userData.draggable = true;
+    gltf.scene.children[0].material.color.setHex(0x818181);
+    gltf.scene.children[1].material.color.setHex(0x818181);
+
     sceneElements.push(gltf.scene);
     gltf.scene.rotation.set(0, 1.6, 0);
     scene.add(gltf.scene);
@@ -69,27 +71,25 @@ const clickMouse = new THREE.Vector2();
 const mouseMove = new THREE.Vector2();
 let draggable = THREE.Object3D;
 draggable = null;
+let intersected;
 
 window.addEventListener('click', (event) => {
-  if (draggable) {
-    console.log(`dropping ${draggable.children[0].name}`);
-    draggable.children[0].material.color.setHex(0x818181);
-    draggable.children[1].material.color.setHex(0x818181);
-    window.removeEventListener('keydown', moveBlock);
-    draggable = null;
-    return;
-  }
+  // if (draggable) {
+  //   console.log(`dropping ${draggable.children[0].name}`);
+  //   draggable.children[0].material.color.setHex(0x818181);
+  //   draggable.children[1].material.color.setHex(0x818181);
+  //   window.removeEventListener('keydown', moveBlock);
 
+  //   draggable = null;
+  //   return;
+  // }
   clickMouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   clickMouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
   raycaster.setFromCamera(clickMouse, camera);
-  const intersected = raycaster.intersectObjects(sceneElements);
+  intersected = raycaster.intersectObjects(sceneElements);
 
-  if (
-    intersected.length > 0 &&
-    intersected[0].object.parent.userData.draggable
-  ) {
+  if (intersected.length > 0 && intersected[0].object.name === 'box') {
     draggable = intersected[0].object.parent;
     draggable.children[0].material.color.setHex(0xff0000);
     draggable.children[1].material.color.setHex(0x00ff00);
@@ -98,8 +98,25 @@ window.addEventListener('click', (event) => {
 
   if (draggable != null) {
     window.addEventListener('keydown', moveBlock);
+    window.addEventListener('click', () => {
+      console.log('here');
+    });
   }
 });
+
+function moveFader(event) {
+  mouseMove.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouseMove.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+  // draggable.children[1].position.z = mouseMove.x;
+
+  // if (draggable.children[1].position.z < -0.6) {
+  //   draggable.children[1].position.z = -0.6;
+  // }
+  // if (draggable.children[1].position.z > 0.6) {
+  //   draggable.children[1].position.z = 0.6;
+  // }
+}
 
 function moveBlock(e) {
   switch (e.key) {
@@ -123,26 +140,11 @@ function moveBlock(e) {
       break;
   }
 }
-// window.addEventListener('mousemove', (event) => {
-//   mouseMove.x = (event.clientX / window.innerWidth) * 2 - 1;
-//   mouseMove.y = -(event.clientY / window.innerHeight) * 2 + 1;
-// });
-
-// raycaster.setFromCamera(mouseMove, camera);
-// const intersected = raycaster.intersectObjects(scene.children);
-// if (intersected.length > 0) {
-//   for (let o of intersected) {
-//     // o.object.material.color.setHex(0xff0000);
-
-//     if (o.object.name === 'ground') continue;
-//     draggable.position.x = -o.point.z;
-//     draggable.position.z = o.point.x;
-//   }
 
 //ANIMATE
 function animate() {
   requestAnimationFrame(animate);
-  controls.update();
+  // controls.update();
   renderer.render(scene, camera);
 }
 animate();
